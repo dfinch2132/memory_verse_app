@@ -5,62 +5,117 @@
 <title>Memory Verses</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1f3a33">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Verses">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="manifest" href="manifest.webmanifest">
-<script>
-  // Paste your Apps Script web app link (the one ending in /exec) between the quotes.
-  var APP_URL = 'https://script.google.com/macros/s/AKfycbxBG-AsNkZxAvlR-3vHrHXfgTy2ysw14awS3rr2Q3dN-DYDZP5FuLp1dnX7p2rp_Bqltg/exec';
-
-  // Opening this page normally sends you straight to the app.
-  // Opening it with ?install at the end shows the setup screen instead,
-  // then tidies the address so the home screen icon saves the plain link.
-  var installing = location.search.indexOf('install') !== -1;
-  if (!installing && APP_URL.indexOf('https://') === 0) {
-    location.replace(APP_URL);
-  }
-</script>
 <style>
-  html,body{height:100%;margin:0}
-  body{background:#1f3a33;color:#edebe1;font:16px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;text-align:center}
-  main{max-width:340px}
-  img{width:96px;height:96px;border-radius:22px;box-shadow:0 12px 30px rgba(0,0,0,.4)}
-  h1{font:600 24px/1.2 Georgia,serif;margin:18px 0 8px}
+  html,body{height:100%;margin:0;overflow:hidden}
+  body{background:#1f3a33;color:#edebe1;font:16px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+  /* the app fills the screen between the status bar and the home indicator */
+  #app{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);bottom:env(safe-area-inset-bottom,0px);width:100%;height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));border:0;display:block;background:#1f3a33}
+  .strip{position:fixed;left:0;right:0;bottom:0;height:env(safe-area-inset-bottom,0px);background:#172c27}
+  .screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;text-align:center;background:#1f3a33}
+  .box{width:100%;max-width:340px}
+  img{width:88px;height:88px;border-radius:20px;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+  h1{font:600 24px/1.2 Georgia,'Times New Roman',serif;margin:16px 0 6px}
   p{margin:0 0 10px;color:rgba(237,235,225,.75)}
   ol{text-align:left;padding-left:22px;margin:14px 0;color:rgba(237,235,225,.9)}
   li{margin-bottom:6px}
+  input{width:100%;box-sizing:border-box;font:600 24px/1 -apple-system,sans-serif;letter-spacing:.3em;text-align:center;color:#1d2b3f;background:#fbfaf5;border:0;border-bottom:2px solid #d2453b;border-radius:6px 6px 0 0;padding:12px 8px;outline:none;margin-top:8px}
+  input:focus-visible{box-shadow:0 0 0 3px #d6b25e}
+  button{appearance:none;border:0;width:100%;height:52px;margin-top:14px;border-radius:10px;background:#d6b25e;color:#1b2e28;font:600 16px -apple-system,sans-serif;box-shadow:inset 0 -2px 0 #b8913a;cursor:pointer}
+  .msg{min-height:22px;margin-top:8px;font-size:14px;color:#f0a39c}
   a{color:#d6b25e}
+  [hidden]{display:none!important}
 </style>
 </head>
 <body>
-<main>
-  <img src="icon-512.png" alt="">
-  <h1 id="title">Opening Memory Verses...</h1>
-  <div id="install" hidden>
-    <p>Add this page to your home screen to open the app from this icon.</p>
+
+<div class="screen" id="installScreen" hidden>
+  <div class="box">
+    <img src="icon-512.png" alt="">
+    <h1>Memory Verses</h1>
+    <p>Add this page to your home screen. It opens full screen, like an app.</p>
     <ol>
       <li>Tap the Share button in Safari.</li>
       <li>Choose Add to Home Screen.</li>
-      <li>Tap Add.</li>
+      <li>Make sure Open as Web App is on, then tap Add.</li>
     </ol>
-    <p><a id="open" href="#">Open the app now</a></p>
   </div>
-  <p id="fallback" hidden><a id="tap" href="#">Tap here to open the app</a></p>
-  <p id="missing" hidden>This page doesn't have the app link yet. Edit index.html on GitHub and paste your /exec link into APP_URL.</p>
-</main>
+</div>
+
+<form class="screen" id="pinScreen" hidden>
+  <div class="box">
+    <img src="icon-512.png" alt="">
+    <h1>Enter your PIN</h1>
+    <p>You only need to do this once on this phone.</p>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="current-password" aria-label="PIN">
+    <div class="msg" id="msg" aria-live="polite"></div>
+    <button type="submit">Unlock</button>
+  </div>
+</form>
+
+<iframe id="app" title="Memory Verses" allow="autoplay; clipboard-write" hidden></iframe>
+<div class="strip"></div>
+
 <script>
-  if (APP_URL.indexOf('https://') !== 0) {
-    document.getElementById('title').textContent = 'Almost set up';
-    document.getElementById('missing').hidden = false;
-  } else if (installing) {
-    document.getElementById('title').textContent = 'Memory Verses';
-    document.getElementById('install').hidden = false;
-    document.getElementById('open').href = APP_URL;
+  // Your Apps Script web app link (the one ending in /exec).
+  var APP_URL = 'https://script.google.com/macros/s/AKfycbxBG-AsNkZxAvlR-3vHrHXfgTy2ysw14awS3rr2Q3dN-DYDZP5FuLp1dnX7p2rp_Bqltg/exec';
+
+  var MESSAGES = {
+    PIN_WRONG: 'That PIN didn’t match. Try again.',
+    PIN_NOT_SET: 'No PIN is set yet. Add APP_PIN in the Apps Script editor under Project Settings > Script properties.',
+    PIN_LOCKED: 'Too many wrong PINs. Try again in an hour.'
+  };
+
+  function $(id){ return document.getElementById(id); }
+  function getPin(){ try { return localStorage.getItem('mvPin') || ''; } catch (e) { return ''; } }
+  function setPin(v){ try { v ? localStorage.setItem('mvPin', v) : localStorage.removeItem('mvPin'); } catch (e) {} }
+
+  function openApp(pin){
+    $('pinScreen').hidden = true;
+    var f = $('app');
+    f.hidden = false;
+    f.src = APP_URL + '?k=' + encodeURIComponent(pin);
+  }
+
+  function askPin(message){
+    $('app').hidden = true;
+    $('app').removeAttribute('src');
+    $('msg').textContent = message || '';
+    $('pinScreen').hidden = false;
+    setTimeout(function(){ $('pin').focus(); }, 50);
+  }
+
+  $('pinScreen').addEventListener('submit', function(e){
+    e.preventDefault();
+    var v = $('pin').value.trim();
+    if (!v){ $('msg').textContent = 'Enter your PIN.'; return; }
+    $('pin').value = '';
+    setPin(v);
+    openApp(v);
+  });
+
+  // The app tells this page when the PIN didn't work.
+  window.addEventListener('message', function(e){
+    var d = e.data;
+    if (!d || d.type !== 'memory-verses-pin') return;
+    setPin('');
+    askPin(MESSAGES[d.code] || '');
+  });
+
+  var standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  if (location.search.indexOf('install') !== -1 && !standalone) {
+    $('installScreen').hidden = false;
     history.replaceState(null, '', location.pathname);
+  } else if (getPin()) {
+    openApp(getPin());
   } else {
-    document.getElementById('tap').href = APP_URL;
-    setTimeout(function(){ document.getElementById('fallback').hidden = false; }, 2500);
+    askPin('');
   }
 </script>
 </body>
