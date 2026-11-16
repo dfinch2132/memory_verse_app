@@ -15,9 +15,9 @@
 <style>
   html,body{height:100%;margin:0;overflow:hidden}
   body{background:#1f3a33;color:#edebe1;font:16px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
-  /* the app fills the screen between the status bar and the home indicator */
-  #app{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);bottom:env(safe-area-inset-bottom,0px);width:100%;height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));border:0;display:block;background:#1f3a33}
-  .strip{position:fixed;left:0;right:0;bottom:0;height:env(safe-area-inset-bottom,0px);background:#172c27}
+  /* the app fills the whole screen, edge to edge; it pads itself for the clock and home bar */
+  #app{position:fixed;top:0;left:0;width:100%;height:100%;border:0;display:block;background:#1f3a33}
+  #probe{position:fixed;top:0;left:0;width:0;visibility:hidden;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
   .screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;text-align:center;background:#1f3a33}
   .box{width:100%;max-width:340px}
   img{width:88px;height:88px;border-radius:20px;box-shadow:0 12px 30px rgba(0,0,0,.4)}
@@ -60,7 +60,7 @@
 </form>
 
 <iframe id="app" title="Memory Verses" allow="autoplay; clipboard-write" hidden></iframe>
-<div class="strip"></div>
+<div id="probe"></div>
 
 <script>
   // Your Apps Script web app link (the one ending in /exec).
@@ -80,7 +80,10 @@
     $('pinScreen').hidden = true;
     var f = $('app');
     f.hidden = false;
-    f.src = APP_URL + '?k=' + encodeURIComponent(pin);
+    var cs = getComputedStyle($('probe'));
+    var st = Math.round(parseFloat(cs.paddingTop) || 0);
+    var sb = Math.round(parseFloat(cs.paddingBottom) || 0);
+    f.src = APP_URL + '?k=' + encodeURIComponent(pin) + '&st=' + st + '&sb=' + sb;
   }
 
   function askPin(message){
