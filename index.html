@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Memory Verses</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f3a33">
+<meta name="apple-mobile-web-app-title" content="Verses">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<script>
+  // Paste your Apps Script web app link (the one ending in /exec) between the quotes.
+  var APP_URL = 'https://script.google.com/macros/s/AKfycbxBG-AsNkZxAvlR-3vHrHXfgTy2ysw14awS3rr2Q3dN-DYDZP5FuLp1dnX7p2rp_Bqltg/exec';
+
+  // Opening this page normally sends you straight to the app.
+  // Opening it with ?install at the end shows the setup screen instead,
+  // then tidies the address so the home screen icon saves the plain link.
+  var installing = location.search.indexOf('install') !== -1;
+  if (!installing && APP_URL.indexOf('https://') === 0) {
+    location.replace(APP_URL);
+  }
+</script>
+<style>
+  html,body{height:100%;margin:0}
+  body{background:#1f3a33;color:#edebe1;font:16px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;text-align:center}
+  main{max-width:340px}
+  img{width:96px;height:96px;border-radius:22px;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+  h1{font:600 24px/1.2 Georgia,serif;margin:18px 0 8px}
+  p{margin:0 0 10px;color:rgba(237,235,225,.75)}
+  ol{text-align:left;padding-left:22px;margin:14px 0;color:rgba(237,235,225,.9)}
+  li{margin-bottom:6px}
+  a{color:#d6b25e}
+</style>
+</head>
+<body>
+<main>
+  <img src="icon-512.png" alt="">
+  <h1 id="title">Opening Memory Verses...</h1>
+  <div id="install" hidden>
+    <p>Add this page to your home screen to open the app from this icon.</p>
+    <ol>
+      <li>Tap the Share button in Safari.</li>
+      <li>Choose Add to Home Screen.</li>
+      <li>Tap Add.</li>
+    </ol>
+    <p><a id="open" href="#">Open the app now</a></p>
+  </div>
+  <p id="fallback" hidden><a id="tap" href="#">Tap here to open the app</a></p>
+  <p id="missing" hidden>This page doesn't have the app link yet. Edit index.html on GitHub and paste your /exec link into APP_URL.</p>
+</main>
+<script>
+  if (APP_URL.indexOf('https://') !== 0) {
+    document.getElementById('title').textContent = 'Almost set up';
+    document.getElementById('missing').hidden = false;
+  } else if (installing) {
+    document.getElementById('title').textContent = 'Memory Verses';
+    document.getElementById('install').hidden = false;
+    document.getElementById('open').href = APP_URL;
+    history.replaceState(null, '', location.pathname);
+  } else {
+    document.getElementById('tap').href = APP_URL;
+    setTimeout(function(){ document.getElementById('fallback').hidden = false; }, 2500);
+  }
+</script>
+</body>
+</html>
