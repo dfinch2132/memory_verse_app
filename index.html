@@ -95,7 +95,7 @@
     var h = window.innerHeight;
     var portrait = window.innerWidth < window.innerHeight;
     if (standalone && portrait && screen.height > h) h = screen.height;
-    f.style.height = h + 'px';
+    f.style.height = (h + reserved) + 'px';
   }
   window.addEventListener('resize', fit);
   window.addEventListener('orientationchange', function(){ setTimeout(fit, 300); });
@@ -115,6 +115,18 @@
     $('pin').value = '';
     setPin(v);
     openApp(v);
+  });
+
+  // Google's page around the app keeps a strip at the bottom. The app reports its real
+  // height, and the frame is made taller by the difference so the app reaches the screen's edge.
+  var reserved = 0;
+  window.addEventListener('message', function(e){
+    var d = e.data;
+    if (!d || d.type !== 'memory-verses-size' || !d.h) return;
+    var f = $('app');
+    var current = parseFloat(f.style.height) || f.getBoundingClientRect().height;
+    var r = Math.max(0, Math.round(current - reserved - d.h));
+    if (r !== 0 && r < 200){ reserved += r; fit(); }
   });
 
   // The app tells this page when the PIN didn't work.
