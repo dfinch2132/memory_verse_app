@@ -13,10 +13,10 @@
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <style>
-  html,body{height:100%;margin:0;overflow:hidden}
+  html,body{height:100%;height:100vh;margin:0;overflow:hidden}
   body{background:#1f3a33;color:#edebe1;font:16px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
   /* the app fills the whole screen, edge to edge; it pads itself for the clock and home bar */
-  #app{position:fixed;top:0;left:0;width:100%;height:100%;border:0;display:block;background:#1f3a33}
+  #app{position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100vh;border:0;display:block;background:#1f3a33}
   #probe{position:fixed;top:0;left:0;width:0;visibility:hidden;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
   .screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;text-align:center;background:#1f3a33}
   .box{width:100%;max-width:340px}
@@ -73,6 +73,7 @@
   };
 
   function $(id){ return document.getElementById(id); }
+  var standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
   function getPin(){ try { return localStorage.getItem('mvPin') || ''; } catch (e) { return ''; } }
   function setPin(v){ try { v ? localStorage.setItem('mvPin', v) : localStorage.removeItem('mvPin'); } catch (e) {} }
 
@@ -80,11 +81,24 @@
     $('pinScreen').hidden = true;
     var f = $('app');
     f.hidden = false;
+    fit();
     var cs = getComputedStyle($('probe'));
     var st = Math.round(parseFloat(cs.paddingTop) || 0);
     var sb = Math.round(parseFloat(cs.paddingBottom) || 0);
     f.src = APP_URL + '?k=' + encodeURIComponent(pin) + '&st=' + st + '&sb=' + sb;
   }
+
+  // iPhone home screen apps can report a viewport shorter than the screen,
+  // which leaves a gap under the app. Size it to the full screen instead.
+  function fit(){
+    var f = $('app');
+    var h = window.innerHeight;
+    var portrait = window.innerWidth < window.innerHeight;
+    if (standalone && portrait && screen.height > h) h = screen.height;
+    f.style.height = h + 'px';
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('orientationchange', function(){ setTimeout(fit, 300); });
 
   function askPin(message){
     $('app').hidden = true;
@@ -111,7 +125,6 @@
     askPin(MESSAGES[d.code] || '');
   });
 
-  var standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
   if (location.search.indexOf('install') !== -1 && !standalone) {
     $('installScreen').hidden = false;
     history.replaceState(null, '', location.pathname);
